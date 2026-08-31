@@ -1,3 +1,4 @@
 # gas_molar_mass_backend
 
-бэк для вычисления молярной массы
+ссылка на фронтэнд:
+https://github.com/spiraljp/gas_molar_mass_frontend/tree/lab1-gas-molar-mass
