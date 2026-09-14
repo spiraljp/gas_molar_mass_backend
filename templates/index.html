@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Каталог газов</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="catalog-page">
+    <main class="catalog-screen">
+        <h1 class="catalog-title">Каталог</h1>
+
+        <form class="catalog-search" action="/" method="get">
+            <input
+                type="text"
+                name="search"
+                placeholder="Поиск"
+                value="{{ search }}"
+            >
+        </form>
+
+        <section class="gas-grid">
+            {% for gas in gases %}
+            <article class="gas-card">
+                <a href="/gas/{{ gas.id }}" class="gas-card-link">
+                    <img
+                        src="{{ gas.image_url }}"
+                        alt="{{ gas.title }}"
+                        class="gas-card-image"
+                    >
+
+                    <h2 class="gas-card-title">{{ gas.title }}</h2>
+
+                    <p class="gas-card-description">
+                        {{ gas.description }}
+                    </p>
+                </a>
+
+                <div class="gas-card-actions">
+                    <a href="/gas/{{ gas.id }}" class="details-button">
+                        Подробнее
+                    </a>
+
+                    <button class="like-button" type="button">
+                        ♡
+                    </button>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="/" class="bottom-nav-link active">Каталог газов</a>
+        <a href="/calculation" class="bottom-nav-link">Молярный расчет</a>
+    </nav>
+</body>
+</html>

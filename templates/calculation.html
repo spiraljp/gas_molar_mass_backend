@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Молярный расчет</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="calculation-page">
+    <main class="calculation-screen">
+        <h1 class="calculation-title">Молярный расчет</h1>
+
+        <p class="calculation-status">
+            <strong>Статус:</strong> Черновик
+        </p>
+
+        <h2 class="calculation-section-title">Медиа:</h2>
+
+        <section class="calculation-media">
+            <img src="{{ gas.image_url }}" alt="{{ gas.title }}" class="calculation-image">
+
+            <div class="calculation-video-preview">
+                <video autoplay loop muted playsinline>
+                    <source src="{{ gas.video_url }}" type="video/mp4">
+                </video>
+            </div>
+        </section>
+
+        <h2 class="calculation-section-title">Данные газа:</h2>
+
+        <section class="calculation-card calculation-gas-data">
+            <p>Формула: {{ gas.formula }}</p>
+            <p>Молярная масса: {{ gas.molar_mass }} г/моль</p>
+            <p>Плотность: {{ gas.density }} г/л</p>
+        </section>
+
+        <h2 class="calculation-section-title">Расчет неизвестного газа:</h2>
+
+        <section class="calculation-card calculation-result-card">
+            <div class="calculation-row">
+                <div>Масса: {{ gas.sample_mass }}г</div>
+                <div>Объем: {{ gas.normal_volume }}л</div>
+            </div>
+
+            <p>Результат: {{ gas.molar_mass }} г/моль</p>
+            <p>M = m * 22.4 / V</p>
+        </section>
+
+        <h2 class="calculation-section-title">Смесь газов:</h2>
+
+        <section class="calculation-card calculation-mixture-card">
+            <div class="mixture-row">
+                <span>Кислород O2</span>
+                <span>60%</span>
+            </div>
+            <div class="mixture-row">
+                <span>Азот N2</span>
+                <span>40%</span>
+            </div>
+            <p>Молярная масса смеси: {{ mixture_molar_mass }}</p>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="/" class="bottom-nav-link">Каталог газов</a>
+        <a href="/calculation" class="bottom-nav-link active">Молярный расчет</a>
+    </nav>
+</body>
+</html>

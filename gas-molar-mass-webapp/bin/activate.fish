@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/spiral/Kostylev_5SEM_26/gas_molar_mass_backend/gas-molar-mass-webapp
+set -gx VIRTUAL_ENV /home/spiral/Kostylev_5SEM_26/lab1-templating-minio/gas-molar-mass-webapp
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ gas.title }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="feed-page">
+    <main class="feed-screen">
+        <video class="feed-video" autoplay loop muted playsinline>
+            <source src="{{ gas.video_url }}" type="video/mp4">
+        </video>
+
+        <div class="feed-like">
+            <div class="feed-heart">♡</div>
+            <div class="feed-like-count">{{ gas.likes_count }}</div>
+        </div>
+
+        <section class="feed-info">
+            <h1>{{ gas.title }} {{ gas.formula }}</h1>
+            <p>
+                Молярная масса: {{ gas.molar_mass }} г/моль<br>
+                Плотность при н.у.: {{ gas.density }} г/л
+            </p>
+        </section>
+
+        <a href="/gas/{{ gas.id }}?next=true" class="next-button">
+            Следующий
+        </a>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="/" class="bottom-nav-link">Каталог газов</a>
+        <a href="/calculation" class="bottom-nav-link">Молярный расчет</a>
+    </nav>
+</body>
+</html>
