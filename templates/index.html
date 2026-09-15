@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -34,6 +33,10 @@
                     <p class="gas-card-description">
                         {{ gas.description }}
                     </p>
+
+                    <p class="gas-card-mass">
+                        {{ gas.molar_mass }} г/моль
+                    </p>
                 </a>
 
                 <div class="gas-card-actions">
@@ -41,10 +44,20 @@
                         Подробнее
                     </a>
 
-                    <button class="like-button" type="button">
+                    <div class="like-button" aria-label="Количество лайков">
                         ♡
-                    </button>
+                    </div>
                 </div>
+
+                <p class="gas-likes-count">
+                    {{ gas.likes_count }}
+                </p>
+
+                <form action="/gas/{{ gas.id }}/delete" method="post" class="delete-gas-form">
+                    <button type="submit" class="delete-gas-button">
+                        Удалить
+                    </button>
+                </form>
             </article>
             {% endfor %}
         </section>

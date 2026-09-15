@@ -1,0 +1,5 @@
+.env
+.venv/
+gas-molar-mass-webapp/
+__pycache__/
+*.pyc

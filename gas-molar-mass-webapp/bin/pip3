@@ -1,4 +1,4 @@
-#!/home/spiral/Kostylev_5SEM_26/lab1-templating-minio/gas-molar-mass-webapp/bin/python3
+#!/home/spiral/Kostylev_5SEM_26/labs_backend/gas-molar-mass-webapp/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

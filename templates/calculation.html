@@ -9,55 +9,101 @@
     <main class="calculation-screen">
         <h1 class="calculation-title">Молярный расчет</h1>
 
-        <p class="calculation-status">
-            <strong>Статус:</strong> Черновик
-        </p>
+        {% if gas %}
+            <p class="calculation-status">
+                <strong>Статус:</strong> Черновик
+            </p>
 
-        <h2 class="calculation-section-title">Медиа:</h2>
+            <h2 class="calculation-section-title">Медиа:</h2>
 
-        <section class="calculation-media">
-            <img src="{{ gas.image_url }}" alt="{{ gas.title }}" class="calculation-image">
+            <section class="calculation-media">
+                <img src="{{ gas.image_url }}" alt="{{ gas.title }}" class="calculation-image">
 
-            <div class="calculation-video-preview">
-                <video autoplay loop muted playsinline>
-                    <source src="{{ gas.video_url }}" type="video/mp4">
-                </video>
-            </div>
-        </section>
+                <div class="calculation-video-preview">
+                    <video autoplay loop muted playsinline>
+                        <source src="{{ gas.video_url }}" type="video/mp4">
+                    </video>
+                </div>
+            </section>
 
-        <h2 class="calculation-section-title">Данные газа:</h2>
+            <h2 class="calculation-section-title">Данные газа:</h2>
 
-        <section class="calculation-card calculation-gas-data">
-            <p>Формула: {{ gas.formula }}</p>
-            <p>Молярная масса: {{ gas.molar_mass }} г/моль</p>
-            <p>Плотность: {{ gas.density }} г/л</p>
-        </section>
+            <section class="calculation-card calculation-gas-data">
+                <p>Формула: {{ gas.formula }}</p>
+                <p>Молярная масса: {{ gas.molar_mass }} г/моль</p>
+                <p>Плотность: {{ gas.density }} г/л</p>
+            </section>
 
-        <h2 class="calculation-section-title">Расчет неизвестного газа:</h2>
+            <h2 class="calculation-section-title">Расчет неизвестного газа:</h2>
 
-        <section class="calculation-card calculation-result-card">
-            <div class="calculation-row">
-                <div>Масса: {{ gas.sample_mass }}г</div>
-                <div>Объем: {{ gas.normal_volume }}л</div>
-            </div>
+            <section class="calculation-card calculation-result-card">
+                <div class="calculation-row">
+                    <div>Масса: 8.00г</div>
+                    <div>Объем: 11.20л</div>
+                </div>
 
-            <p>Результат: {{ gas.molar_mass }} г/моль</p>
-            <p>M = m * 22.4 / V</p>
-        </section>
+                <p>Результат: {{ gas.molar_mass }} г/моль</p>
+                <p>M = m * 22.4 / V</p>
+            </section>
 
-        <h2 class="calculation-section-title">Смесь газов:</h2>
+            <h2 class="calculation-section-title">Смесь газов:</h2>
 
-        <section class="calculation-card calculation-mixture-card">
-            <div class="mixture-row">
-                <span>Кислород O2</span>
-                <span>60%</span>
-            </div>
-            <div class="mixture-row">
-                <span>Азот N2</span>
-                <span>40%</span>
-            </div>
-            <p>Молярная масса смеси: {{ mixture_molar_mass }}</p>
-        </section>
+            <section class="calculation-card calculation-mixture-card">
+                <div class="mixture-row">
+                    <span>Кислород O2</span>
+                    <span>60%</span>
+                </div>
+                <div class="mixture-row">
+                    <span>Азот N2</span>
+                    <span>40%</span>
+                </div>
+                <p>Молярная масса смеси: {{ mixture_molar_mass }}</p>
+            </section>
+
+            <form action="/gas/{{ gas.id }}/publish" method="post" class="publish-form">
+                <input type="text" name="gas_formula" value="{{ gas.formula }}" placeholder="Формула газа" required>
+                <input type="text" name="short_description" value="{{ gas.description }}" placeholder="Краткое описание" required>
+                <input type="number" step="0.01" name="molar_mass" value="{{ gas.molar_mass }}" placeholder="Молярная масса" required>
+                <input type="number" step="0.0001" name="density_normal_conditions" value="{{ gas.density }}" placeholder="Плотность при н.у." required>
+
+                <button type="submit" class="publish-button">Опубликовать</button>
+            </form>
+        {% else %}
+            <p class="calculation-status">
+                <strong>Статус:</strong> Черновик отсутствует
+            </p>
+
+            <h2 class="calculation-section-title">Медиа:</h2>
+
+            <section class="calculation-media">
+                <img src="/static/img/default-gas.png" alt="Газ по умолчанию" class="calculation-image">
+
+                <div class="calculation-video-preview">
+                    <video autoplay loop muted playsinline>
+                        <source src="/static/img/default-gas-video.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </section>
+
+            <form action="/gas/draft" method="post" class="draft-form">
+                <label>
+                    Название газа
+                    <input type="text" name="gas_name" value="Метан" required>
+                </label>
+
+                <label>
+                    Фото по умолчанию
+                    <input type="text" value="/static/img/default-gas.png" readonly>
+                </label>
+
+                <label>
+                    Видео по умолчанию
+                    <input type="text" value="/static/img/default-gas-video.mp4" readonly>
+                </label>
+
+                <button type="submit" class="publish-button">Далее</button>
+            </form>
+        {% endif %}
     </main>
 
     <nav class="bottom-nav">

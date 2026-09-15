@@ -9,7 +9,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV /home/spiral/Kostylev_5SEM_26/lab1-templating-minio/gas-molar-mass-webapp
+setenv VIRTUAL_ENV /home/spiral/Kostylev_5SEM_26/labs_backend/gas-molar-mass-webapp
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/"bin":$PATH"
