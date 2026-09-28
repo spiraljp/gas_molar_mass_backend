@@ -83,6 +83,26 @@ async def get_catalog(
         },
     )
 
+@router.get("/feed")
+async def get_feed(request: Request, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Gas)
+        .where(Gas.gas_status == "published")
+        .order_by(Gas.id)
+    )
+
+    first_gas = result.scalars().first()
+
+    if first_gas is None:
+        raise HTTPException(status_code=404, detail="Опубликованные газы не найдены")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="gas.html",
+        context={
+            "gas": await attach_single_view_data(first_gas, db),
+        },
+    )
 
 @router.get("/gas/{gas_id}")
 async def get_gas_detail(

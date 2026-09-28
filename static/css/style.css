@@ -150,8 +150,10 @@ body {
 
 .like-button {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 1px;
     width: 42px;
     height: 42px;
     padding: 0;
@@ -159,13 +161,22 @@ body {
     border-radius: 50%;
     background: #ffffff;
     color: #0c5592;
-    font-size: 27px;
-    line-height: 1;
-    cursor: pointer;
 }
 
-.like-button:hover {
-    background: #eef7ff;
+.like-icon {
+    display: block;
+    height: 18px;
+    font-size: 22px;
+    line-height: 18px;
+    color: #0c5592;
+}
+
+.like-count {
+    display: block;
+    font-size: 10px;
+    line-height: 10px;
+    font-weight: 700;
+    color: #0c5592;
 }
 
 .bottom-nav {
@@ -177,21 +188,10 @@ body {
     height: 70px;
     transform: translateX(-50%);
     display: grid;
-    grid-template-columns: 82px 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     align-items: center;
-    padding: 0 18px;
+    padding: 0 10px;
     background: #245f92;
-}
-
-.bottom-nav::before {
-    content: "";
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 68% 50%, #ffffff 0 8px, transparent 9px),
-        radial-gradient(circle at 44% 30%, #ffffff 0 8px, transparent 9px),
-        radial-gradient(circle at 42% 70%, #ffffff 0 8px, transparent 9px);
 }
 
 .bottom-nav-link {
@@ -199,9 +199,9 @@ body {
     text-decoration: none;
     text-align: center;
     font-size: 14px;
-    line-height: 1;
+    line-height: 1.15;
     font-weight: 400;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .bottom-nav-link.active {
@@ -237,9 +237,10 @@ body {
 .feed-like {
     position: absolute;
     right: 22px;
-    bottom: 120px;
-    text-align: center;
+    bottom: 182px;
+    z-index: 3;
     color: #ffffff;
+    text-align: center;
 }
 
 .feed-heart {
@@ -276,22 +277,28 @@ body {
     color: #ffffff;
 }
 
-.next-button {
+.next-icon-button {
     position: absolute;
     right: 20px;
-    bottom: 20px;
-    min-width: 114px;
-    height: 42px;
-    padding: 0 18px;
+    bottom: 104px;
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 24px;
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 50%;
     background: #ffffff;
     color: #245f92;
     text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 32px;
+    line-height: 1;
+    font-weight: 400;
+}
+
+.next-icon-button:active {
+    transform: scale(0.96);
 }
 
 .calculation-page {
@@ -334,13 +341,8 @@ body {
 }
 
 .calculation-media {
-    display: grid;
-    grid-template-columns: 145px 195px;
-    width: 340px;
-    height: 145px;
-    margin: 0 auto 20px;
-    overflow: hidden;
-    background: #ffffff;
+    width: 236px;
+    margin: 0 auto;
 }
 
 .calculation-image {
@@ -533,4 +535,87 @@ body {
 
 .delete-gas-button:hover {
     background: #fff0f0;
+}
+
+.calculation-media-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+    margin: 0 auto;
+}
+
+.calculation-media-stack .calculation-image,
+.calculation-media-stack .calculation-video-preview {
+    width: 100%;
+    height: 170px;
+}
+
+.calculation-media-stack .calculation-image {
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.calculation-media-stack .calculation-video-preview {
+    position: relative;
+    overflow: hidden;
+    background: #000000;
+}
+
+.calculation-media-stack .calculation-video-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.publish-form,
+.draft-form {
+    width: 300px;
+    margin: 12px auto 0;
+    display: grid;
+    gap: 9px;
+}
+
+.publish-form label,
+.draft-form label {
+    display: grid;
+    gap: 4px;
+    color: #000000;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.publish-form input,
+.draft-form input {
+    width: 100%;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1.5px solid #0c5592;
+    border-radius: 0;
+    background: #ffffff;
+    color: #000000;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.draft-form input[type="file"] {
+    padding: 7px 8px;
+    font-size: 12px;
+}
+
+.publish-button {
+    width: 100%;
+    height: 38px;
+    border: 1.5px solid #0c5592;
+    border-radius: 20px;
+    background: #ffffff;
+    color: #0c5592;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.publish-button:hover {
+    background: #ffffff;
 }

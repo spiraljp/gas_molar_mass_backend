@@ -26,14 +26,28 @@
             </p>
         </section>
 
-        <a href="/gas/{{ gas.id }}?next=true" class="next-button">
-            Следующий
+        <a
+            href="/gas/{{ gas.id }}?next=true"
+            class="next-icon-button"
+            aria-label="Следующий газ"
+            title="Следующий газ"
+        >
+            ›
         </a>
     </main>
 
     <nav class="bottom-nav">
-        <a href="/" class="bottom-nav-link">Каталог газов</a>
-        <a href="/calculation" class="bottom-nav-link">Молярный расчет</a>
+        <a href="/" class="bottom-nav-link">
+            Каталог газов
+        </a>
+
+        <a href="/feed" class="bottom-nav-link active">
+            Лента
+        </a>
+
+        <a href="/calculation" class="bottom-nav-link">
+            Молярный расчет
+        </a>
     </nav>
 </body>
 </html>
