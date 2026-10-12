@@ -619,3 +619,330 @@ body {
 .publish-button:hover {
     background: #ffffff;
 }
+
+.draft-form-with-media {
+    width: 330px;
+}
+
+.draft-media-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+}
+
+.draft-media-item {
+    min-width: 0;
+}
+
+.draft-media-item .calculation-image,
+.draft-media-item .calculation-video-preview {
+    width: 100%;
+    height: 145px;
+}
+
+.draft-media-item .calculation-image {
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.draft-media-item .calculation-video-preview {
+    overflow: hidden;
+    background: #000000;
+}
+
+.draft-media-item .calculation-video-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.draft-media-control {
+    display: grid;
+    gap: 4px;
+    margin-top: 4px;
+    color: #000000;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.draft-media-control input[type="file"] {
+    width: 100%;
+    min-height: 34px;
+    padding: 7px 6px;
+    border: 1.5px solid #0c5592;
+    background: #ffffff;
+    color: #000000;
+    font-size: 11px;
+    box-sizing: border-box;
+}
+
+
+.gas-draft-page,
+.calculation-page {
+    min-height: 100vh;
+    background: #f1f1f3;
+}
+
+.gas-draft-screen,
+.calculation-screen {
+    width: 390px;
+    min-height: calc(100vh - 70px);
+    margin: 0 auto;
+    padding: 22px 36px 90px;
+    box-sizing: border-box;
+    background: #f1f1f3;
+    overflow: hidden;
+}
+
+.draft-form-with-media {
+    width: 100%;
+    display: grid;
+    gap: 12px;
+}
+
+.draft-form-with-media > label {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000000;
+}
+
+.draft-form-with-media input[type="text"],
+.draft-form-with-media input[type="number"] {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1.5px solid #0c5592;
+    background: #ffffff;
+    color: #000000;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.draft-media-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+    align-items: start;
+}
+
+.draft-media-item {
+    min-width: 0;
+    width: 100%;
+}
+
+.draft-media-item .calculation-image,
+.draft-media-item .calculation-video-preview {
+    display: block;
+    width: 100%;
+    height: 160px;
+    max-width: 100%;
+    overflow: hidden;
+    background: #000000;
+}
+
+.draft-media-item .calculation-image {
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.draft-media-item .calculation-video-preview video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.draft-media-control {
+    display: grid;
+    gap: 4px;
+    margin-top: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000000;
+}
+
+.draft-media-control input[type="file"] {
+    width: 100%;
+    min-height: 34px;
+    padding: 7px 5px;
+    border: 1.5px solid #0c5592;
+    background: #ffffff;
+    color: #000000;
+    font-size: 10px;
+    box-sizing: border-box;
+}
+
+.publish-button {
+    width: 100%;
+    height: 46px;
+    border: 1.5px solid #0c5592;
+    border-radius: 24px;
+    background: #ffffff;
+    color: #0c5592;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.gas_draft-page {
+    min-height: 100vh;
+    margin: 0;
+    background: #f1f1f3;
+}
+
+.gas_draft-screen {
+    width: 390px;
+    min-height: calc(100vh - 70px);
+    margin: 0 auto;
+    padding: 22px 36px 90px;
+    box-sizing: border-box;
+    background: #f1f1f3;
+    overflow: hidden;
+}
+
+.gas_draft-title {
+    margin: 0 0 16px;
+    text-align: center;
+    font-size: 25px;
+    line-height: 1.15;
+    font-weight: 700;
+    color: #000000;
+}
+
+.gas_draft-status {
+    margin: 0 0 10px;
+    color: #000000;
+    font-size: 15px;
+}
+
+.gas_draft-section-title {
+    margin: 0 0 8px;
+    color: #000000;
+    font-size: 16px;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.gas_draft-media-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+    margin: 0 auto 12px;
+}
+
+.gas_draft-media-stack .gas_draft-image,
+.gas_draft-media-stack .gas_draft-video-preview {
+    width: 100%;
+    height: 170px;
+}
+
+.gas_draft-image {
+    display: block;
+    object-fit: cover;
+    background: #ffffff;
+}
+
+.gas_draft-video-preview {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #000000;
+}
+
+.gas_draft-video-preview video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.draft-form-with-media {
+    width: 100%;
+    display: grid;
+    gap: 12px;
+}
+
+.draft-form-with-media > label,
+.publish-form label {
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000000;
+}
+
+.draft-form-with-media input[type="text"],
+.publish-form input[type="number"] {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1.5px solid #0c5592;
+    background: #ffffff;
+    color: #000000;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.draft-media-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+    align-items: start;
+}
+
+.draft-media-item {
+    min-width: 0;
+    width: 100%;
+}
+
+.draft-media-item .gas_draft-image,
+.draft-media-item .gas_draft-video-preview {
+    display: block;
+    width: 100%;
+    height: 155px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.draft-media-control {
+    display: grid;
+    gap: 4px;
+    margin-top: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000000;
+}
+
+.draft-media-control input[type="file"] {
+    width: 100%;
+    min-height: 34px;
+    padding: 7px 5px;
+    border: 1.5px solid #0c5592;
+    background: #ffffff;
+    color: #000000;
+    font-size: 10px;
+    box-sizing: border-box;
+}
+
+.publish-form {
+    width: 300px;
+    margin: 10px auto 0;
+    display: grid;
+    gap: 9px;
+}
+
+.publish-button {
+    width: 100%;
+    height: 46px;
+    border: 1.5px solid #0c5592;
+    border-radius: 24px;
+    background: #ffffff;
+    color: #0c5592;
+    font-size: 15px;
+    font-weight: 700;
+}

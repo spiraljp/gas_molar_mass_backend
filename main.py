@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
-from api.handlers import router
+from api.gas_api import router
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="Gas Catalog App")
