@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Молярный расчет</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="gas_draft-page">
+    <main class="gas_draft-screen">
+        <h1 class="gas_draft-title">Молярный расчет</h1>
+
+        {% if gas %}
+            <p class="gas_draft-status">
+                <strong>Статус:</strong> Черновик
+            </p>
+
+            <h2 class="gas_draft-section-title">Медиа:</h2>
+
+            <section class="gas_draft-media gas_draft-media-stack">
+                <img src="{{ gas.image_url }}" alt="{{ gas.title }}" class="gas_draft-image">
+
+                <div class="gas_draft-video-preview">
+                    <video autoplay loop muted playsinline>
+                        <source src="{{ gas.video_url }}" type="video/mp4">
+                    </video>
+                </div>
+            </section>
+
+            <h2 class="gas_draft-section-title">Данные газа:</h2>
+
+            <form action="/gas/{{ gas.id }}/publish" method="post" class="publish-form">
+                <input type="hidden" name="gas_formula" value="{{ gas.formula }}">
+                <input type="hidden" name="short_description" value="{{ gas.description }}">
+
+                <label>
+                    Молярная масса
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="molar_mass"
+                        value="{{ gas.molar_mass }}"
+                        placeholder="Например: 16.04"
+                        required
+                    >
+                </label>
+
+                <label>
+                    Плотность при н.у.
+                    <input
+                        type="number"
+                        step="0.0001"
+                        name="density_normal_conditions"
+                        value="{{ gas.density }}"
+                        placeholder="Например: 0.717"
+                        required
+                    >
+                </label>
+
+                <button type="submit" class="publish-button">Опубликовать</button>
+            </form>
+            {% else %}
+                <p class="gas_draft-status">
+                    <strong>Статус:</strong> Черновик отсутствует
+                </p>
+
+                <h2 class="gas_draft-section-title">Медиа:</h2>
+
+                <form action="/gas/draft" method="post" class="draft-form draft-form-with-media">
+                    <label>
+                        Название газа
+                        <input type="text" name="gas_name" value="Метан" required>
+                    </label>
+
+                    <div class="draft-media-grid">
+                        <div class="draft-media-item">
+                            <img src="/static/img/default-gas.png" alt="Газ по умолчанию" class="gas_draft-image">
+
+                            <label class="draft-media-control">
+                                Фото
+                                <input type="file" accept="image/*">
+                            </label>
+                        </div>
+
+                        <div class="draft-media-item">
+                            <div class="gas_draft-video-preview">
+                                <video autoplay loop muted playsinline>
+                                    <source src="/static/img/default-gas-video.mp4" type="video/mp4">
+                                </video>
+                            </div>
+
+                            <label class="draft-media-control">
+                                Видео
+                                <input type="file" accept="video/mp4,video/*">
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="publish-button">Далее</button>
+                </form>
+            {% endif %}
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="/" class="bottom-nav-link">
+            Каталог газов
+        </a>
+
+        <a href="/feed" class="bottom-nav-link">
+            Лента
+        </a>
+
+        <a href="/gas_draft" class="bottom-nav-link active">
+            Молярный расчет
+        </a>
+    </nav>
+</body>
+</html>

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select, text
@@ -25,8 +25,13 @@ from schemas.user_schemas import (
     UserRegisterRequest,
     UserResponse,
 )
-from services.current_user_service import get_current_user_id
+from services.current_user_service import (
+    get_current_user_id,
+    get_optional_current_user_id,
+)
 from services.minio_service import upload_file_to_minio
+from services.password_service import hash_password, verify_password
+from services.redis_service import create_session, delete_session
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -74,6 +79,7 @@ async def attach_single_view_data(gas: Gas, db: AsyncSession) -> dict:
     view_gas = (await attach_view_data([gas], db))[0]
     return view_gas
 
+
 async def get_liked_gas_ids(db: AsyncSession, user_id: int) -> set[int]:
     result = await db.execute(
         select(GasLike.gas_id).where(GasLike.user_id == user_id)
@@ -82,9 +88,13 @@ async def get_liked_gas_ids(db: AsyncSession, user_id: int) -> set[int]:
     return set(result.scalars().all())
 
 
-async def serialize_api_gas(gas: Gas, db: AsyncSession, user_id: int) -> dict:
+async def serialize_api_gas(gas: Gas, db: AsyncSession, user_id: int | None) -> dict:
     like_counts = await get_like_counts(db)
-    liked_gas_ids = await get_liked_gas_ids(db, user_id)
+    liked_gas_ids = (
+        await get_liked_gas_ids(db, user_id)
+        if user_id is not None
+        else set()
+    )
 
     return {
         "id": gas.id,
@@ -97,17 +107,22 @@ async def serialize_api_gas(gas: Gas, db: AsyncSession, user_id: int) -> dict:
         "density_normal_conditions": gas.density_normal_conditions,
         "gas_status": gas.gas_status,
         "likes_count": like_counts.get(gas.id, 0),
-        "is_owner": 1 if gas.creator_id == user_id else 0,
+        "is_owner": 1 if user_id is not None and gas.creator_id == user_id else 0,
         "is_liked": 1 if gas.id in liked_gas_ids else 0,
     }
 
-@router.get("/api/gases", response_model=list[GasListItem])
+
+@router.get(
+    "/api/gases",
+    response_model=list[GasListItem],
+    summary="Получить список газов",
+    description="Возвращает опубликованные газы. Поддерживает фильтрацию по названию через query-параметр search. Доступно гостю.",
+)
 async def api_get_gases(
     search: str = "",
     db: AsyncSession = Depends(get_db),
+    current_user_id: int | None = Depends(get_optional_current_user_id),
 ):
-    current_user_id = get_current_user_id()
-
     stmt = select(Gas).where(Gas.gas_status == "published")
 
     if search:
@@ -122,21 +137,44 @@ async def api_get_gases(
     ]
 
 
-@router.get("/api/gases/feed", response_model=GasFeedItem)
+@router.get(
+    "/api/gases/feed",
+    response_model=GasFeedItem,
+    summary="Получить газ для ленты",
+    description="Возвращает опубликованный газ для ленты. Без параметров возвращает первый газ. С gas_id и next=true возвращает следующий опубликованный газ. Доступно гостю.",
+)
 async def api_get_feed(
+    gas_id: int | None = None,
+    next: bool = False,
     db: AsyncSession = Depends(get_db),
+    current_user_id: int | None = Depends(get_optional_current_user_id),
 ):
-    current_user_id = get_current_user_id()
-
     result = await db.execute(
         select(Gas)
         .where(Gas.gas_status == "published")
         .order_by(Gas.id)
     )
-    gas = result.scalars().first()
+    published_gases = result.scalars().all()
+
+    if not published_gases:
+        raise HTTPException(status_code=404, detail="Опубликованные газы не найдены")
+
+    if gas_id is None:
+        return await serialize_api_gas(published_gases[0], db, current_user_id)
+
+    gas = None
+
+    for index, current_gas in enumerate(published_gases):
+        if current_gas.id == gas_id:
+            if next:
+                next_index = (index + 1) % len(published_gases)
+                gas = published_gases[next_index]
+            else:
+                gas = current_gas
+            break
 
     if gas is None:
-        raise HTTPException(status_code=404, detail="Опубликованные газы не найдены")
+        raise HTTPException(status_code=404, detail="Газ не найден")
 
     return await serialize_api_gas(gas, db, current_user_id)
 
@@ -148,16 +186,16 @@ async def api_get_feed(
 #     db: AsyncSession = Depends(get_db),
 # ):
 #     current_user_id = get_current_user_id()
-
+#
 #     result = await db.execute(
 #         select(Gas)
 #         .where(Gas.gas_status == "published")
 #         .order_by(Gas.id)
 #     )
 #     published_gases = result.scalars().all()
-
+#
 #     gas = None
-
+#
 #     for index, current_gas in enumerate(published_gases):
 #         if current_gas.id == gas_id:
 #             if next:
@@ -166,19 +204,23 @@ async def api_get_feed(
 #             else:
 #                 gas = current_gas
 #             break
-
+#
 #     if gas is None:
 #         raise HTTPException(status_code=404, detail="Газ не найден")
-
+#
 #     return await serialize_api_gas(gas, db, current_user_id)
 
 
-@router.get("/api/gases/draft", response_model=GasDraftResponse)
+@router.get(
+    "/api/gases/draft",
+    response_model=GasDraftResponse,
+    summary="Получить черновик газа",
+    description="Возвращает черновик текущего авторизованного пользователя. Требует cookie session_id.",
+)
 async def api_get_draft(
     db: AsyncSession = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
 ):
-    current_user_id = get_current_user_id()
-
     result = await db.execute(
         select(Gas)
         .where(
@@ -194,15 +236,20 @@ async def api_get_draft(
 
     return await serialize_api_gas(draft_gas, db, current_user_id)
 
-@router.post("/api/gases", response_model=GasDraftResponse)
+
+@router.post(
+    "/api/gases",
+    response_model=GasDraftResponse,
+    summary="Создать газ",
+    description="Создает газ в статусе draft и загружает изображение и видео в MinIO. creator_id берется из авторизованной cookie-сессии.",
+)
 async def api_create_gas(
     gas_name: str = Form(...),
     image: UploadFile = File(...),
     video: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
 ):
-    current_user_id = get_current_user_id()
-
     existing_draft_result = await db.execute(
         select(Gas).where(
             Gas.creator_id == current_user_id,
@@ -241,14 +288,18 @@ async def api_create_gas(
     return await serialize_api_gas(gas, db, current_user_id)
 
 
-@router.put("/api/gases/{gas_id}/publish", response_model=GasActionResponse)
+@router.put(
+    "/api/gases/{gas_id}/publish",
+    response_model=GasActionResponse,
+    summary="Опубликовать газ",
+    description="Публикует черновик текущего пользователя. Гость получает 401, чужой газ нельзя опубликовать.",
+)
 async def api_publish_gas(
     gas_id: int,
     data: GasPublishRequest,
     db: AsyncSession = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
 ):
-    current_user_id = get_current_user_id()
-
     result = await db.execute(
         select(Gas).where(
             Gas.id == gas_id,
@@ -278,13 +329,17 @@ async def api_publish_gas(
     }
 
 
-@router.delete("/api/gases/{gas_id}", response_model=GasActionResponse)
+@router.delete(
+    "/api/gases/{gas_id}",
+    response_model=GasActionResponse,
+    summary="Удалить газ",
+    description="Выполняет soft delete газа текущего пользователя: статус меняется на deleted.",
+)
 async def api_delete_gas(
     gas_id: int,
     db: AsyncSession = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
 ):
-    current_user_id = get_current_user_id()
-
     result = await db.execute(
         select(Gas).where(
             Gas.id == gas_id,
@@ -311,14 +366,17 @@ async def api_delete_gas(
     }
 
 
-@router.post("/api/gases/{gas_id}/like")
+@router.post(
+    "/api/gases/{gas_id}/like",
+    summary="Поставить или убрать лайк",
+    description="Ставит или убирает лайк от текущего авторизованного пользователя. value=1 ставит лайк, value=0 убирает.",
+)
 async def api_set_like(
     gas_id: int,
     data: GasLikeRequest,
     db: AsyncSession = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
 ):
-    current_user_id = get_current_user_id()
-
     if data.value not in (0, 1):
         raise HTTPException(
             status_code=400,
@@ -363,7 +421,13 @@ async def api_set_like(
         "message": "Лайк обновлен",
     }
 
-@router.post("/api/users/register", response_model=UserResponse)
+
+@router.post(
+    "/api/users/register",
+    response_model=UserResponse,
+    summary="Зарегистрировать пользователя",
+    description="Создает пользователя и сохраняет пароль в виде password_hash.",
+)
 async def api_register_user(
     data: UserRegisterRequest,
     db: AsyncSession = Depends(get_db),
@@ -381,7 +445,7 @@ async def api_register_user(
 
     user = User(
         username=data.username,
-        password_hash=f"stub_hash_{data.password}",
+        password_hash=hash_password(data.password),
     )
 
     db.add(user)
@@ -394,22 +458,65 @@ async def api_register_user(
     }
 
 
-@router.post("/api/users/login", response_model=AuthStubResponse)
+@router.post(
+    "/api/users/login",
+    response_model=AuthStubResponse,
+    summary="Аутентифицировать пользователя",
+    description="Проверяет логин и пароль, создает сессию в Redis и отправляет session_id в cookie.",
+)
 async def api_login_user(
     data: AuthStubRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
 ):
+    result = await db.execute(
+        select(User).where(User.username == data.username)
+    )
+    user = result.scalar_one_or_none()
+
+    if user is None or not verify_password(data.password, user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Неверное имя пользователя или пароль",
+        )
+
+    session_id = await create_session(user.id)
+
+    response.set_cookie(
+        key="session_id",
+        value=session_id,
+        httponly=True,
+        samesite="lax",
+        max_age=60 * 60 * 24,
+    )
+
     return {
-        "message": "Аутентификация будет реализована в 4 лабораторной",
-        "current_user_id": get_current_user_id(),
+        "message": "Аутентификация выполнена",
+        "current_user_id": user.id,
     }
 
 
-@router.post("/api/users/logout", response_model=AuthStubResponse)
-async def api_logout_user():
+@router.post(
+    "/api/users/logout",
+    response_model=AuthStubResponse,
+    summary="Выйти из системы",
+    description="Удаляет сессию пользователя из Redis и очищает cookie session_id.",
+)
+async def api_logout_user(
+    request: Request,
+    response: Response,
+):
+    session_id = request.cookies.get("session_id")
+
+    await delete_session(session_id)
+
+    response.delete_cookie("session_id")
+
     return {
-        "message": "Деавторизация будет реализована в 4 лабораторной",
+        "message": "Деавторизация выполнена",
         "current_user_id": None,
     }
+
 
 # @router.get("/")
 # async def get_catalog(
@@ -418,13 +525,13 @@ async def api_logout_user():
 #     db: AsyncSession = Depends(get_db),
 # ):
 #     stmt = select(Gas).where(Gas.gas_status == "published")
-
+#
 #     if search:
 #         stmt = stmt.where(Gas.gas_name.ilike(f"%{search}%"))
-
+#
 #     result = await db.execute(stmt.order_by(Gas.id))
 #     gases = result.scalars().all()
-
+#
 #     return templates.TemplateResponse(
 #         request=request,
 #         name="gas_catalog.html",
@@ -433,7 +540,7 @@ async def api_logout_user():
 #             "search": search,
 #         },
 #     )
-
+#
 # @router.get("/feed")
 # async def get_feed(request: Request, db: AsyncSession = Depends(get_db)):
 #     result = await db.execute(
@@ -441,12 +548,12 @@ async def api_logout_user():
 #         .where(Gas.gas_status == "published")
 #         .order_by(Gas.id)
 #     )
-
+#
 #     first_gas = result.scalars().first()
-
+#
 #     if first_gas is None:
 #         raise HTTPException(status_code=404, detail="Опубликованные газы не найдены")
-
+#
 #     return templates.TemplateResponse(
 #         request=request,
 #         name="gas_feed.html",
@@ -454,7 +561,7 @@ async def api_logout_user():
 #             "gas": await attach_single_view_data(first_gas, db),
 #         },
 #     )
-
+#
 # @router.get("/gas/{gas_id}")
 # async def get_gas_detail(
 #     request: Request,
@@ -468,9 +575,9 @@ async def api_logout_user():
 #         .order_by(Gas.id)
 #     )
 #     published_gases = result.scalars().all()
-
+#
 #     gas = None
-
+#
 #     for index, current_gas in enumerate(published_gases):
 #         if current_gas.id == gas_id:
 #             if next:
@@ -479,10 +586,10 @@ async def api_logout_user():
 #             else:
 #                 gas = current_gas
 #             break
-
+#
 #     if gas is None:
 #         raise HTTPException(status_code=404, detail="Газ не найден")
-
+#
 #     return templates.TemplateResponse(
 #         request=request,
 #         name="gas_feed.html",
@@ -490,8 +597,8 @@ async def api_logout_user():
 #             "gas": await attach_single_view_data(gas, db),
 #         },
 #     )
-
-
+#
+#
 # @router.get("/gas_draft")
 # async def get_gas_draft(
 #     request: Request,
@@ -506,9 +613,9 @@ async def api_logout_user():
 #         .order_by(Gas.id)
 #     )
 #     draft_gas = result.scalars().first()
-
+#
 #     mixture_molar_mass = 32.00 * 0.60 + 28.01 * 0.40
-
+#
 #     return templates.TemplateResponse(
 #         request=request,
 #         name="gas_draft.html",
@@ -517,9 +624,9 @@ async def api_logout_user():
 #             "mixture_molar_mass": round(mixture_molar_mass, 2),
 #         },
 #     )
-
-
-
+#
+#
+#
 # @router.post("/gas/draft")
 # async def create_draft_gas(
 #     gas_name: str = Form(...),
@@ -532,10 +639,10 @@ async def api_logout_user():
 #         )
 #     )
 #     existing_draft = existing_draft_result.scalar_one_or_none()
-
+#
 #     if existing_draft:
 #         return RedirectResponse(url="/gas_draft", status_code=303)
-
+#
 #     draft_gas = Gas(
 #         gas_name=gas_name,
 #         gas_formula="",
@@ -549,13 +656,13 @@ async def api_logout_user():
 #         formed_at=None,
 #         creator_id=get_current_user_id(),
 #     )
-
+#
 #     db.add(draft_gas)
 #     await db.commit()
-
+#
 #     return RedirectResponse(url="/gas_draft", status_code=303)
-
-
+#
+#
 # @router.post("/gas/{gas_id}/publish")
 # async def publish_gas(
 #     gas_id: int,
@@ -573,22 +680,22 @@ async def api_logout_user():
 #         )
 #     )
 #     gas = result.scalar_one_or_none()
-
+#
 #     if gas is None:
 #         raise HTTPException(status_code=404, detail="Черновик газа не найден")
-
+#
 #     gas.gas_formula = gas_formula
 #     gas.short_description = short_description
 #     gas.molar_mass = molar_mass
 #     gas.density_normal_conditions = density_normal_conditions
-    # gas.gas_status = "published"
-    # gas.formed_at = datetime.now()
-
-    # await db.commit()
-
-    # return RedirectResponse(url="/", status_code=303)
-
-
+#     gas.gas_status = "published"
+#     gas.formed_at = datetime.now()
+#
+#     await db.commit()
+#
+#     return RedirectResponse(url="/", status_code=303)
+#
+#
 # @router.post("/gas/{gas_id}/delete")
 # async def delete_gas(
 #     gas_id: int,
@@ -605,5 +712,5 @@ async def api_logout_user():
 #         {"gas_id": gas_id},
 #     )
 #     await db.commit()
-
+#
 #     return RedirectResponse(url="/", status_code=303)
