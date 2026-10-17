@@ -58,22 +58,12 @@
 
                 <button type="submit" class="publish-button">Опубликовать</button>
             </form>
-        {% else %}
+                {% else %}
             <p class="calculation-status">
                 <strong>Статус:</strong> Черновик отсутствует
             </p>
 
             <h2 class="calculation-section-title">Медиа:</h2>
-
-            <section class="calculation-media calculation-media-stack">
-                <img src="/static/img/default-gas.png" alt="Газ по умолчанию" class="calculation-image">
-
-                <div class="calculation-video-preview">
-                    <video autoplay loop muted playsinline>
-                        <source src="/static/img/default-gas-video.mp4" type="video/mp4">
-                    </video>
-                </div>
-            </section>
 
             <form action="/gas/draft" method="post" class="draft-form">
                 <label>
@@ -81,15 +71,29 @@
                     <input type="text" name="gas_name" value="Метан" required>
                 </label>
 
-                <label>
-                    Фото
-                    <input type="file" accept="image/*">
-                </label>
+                <div class="draft-media-item">
+                    <img
+                        src="/static/img/default-gas.png"
+                        alt="Газ по умолчанию"
+                        class="calculation-image"
+                    >
+                    <label>
+                        Фото
+                        <input type="file" accept="image/*">
+                    </label>
+                </div>
 
-                <label>
-                    Видео
-                    <input type="file" accept="video/mp4,video/*">
-                </label>
+                <div class="draft-media-item">
+                    <div class="calculation-video-preview">
+                        <video autoplay loop muted playsinline>
+                            <source src="/static/img/default-gas-video.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <label>
+                        Видео
+                        <input type="file" accept="video/mp4,video/*">
+                    </label>
+                </div>
 
                 <button type="submit" class="publish-button">Далее</button>
             </form>
