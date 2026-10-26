@@ -480,7 +480,7 @@ async def api_login_user(
             detail="Неверное имя пользователя или пароль",
         )
 
-    session_id = await create_session(user.id)
+    session_id = await create_session(user.id, user.username)
 
     response.set_cookie(
         key="session_id",

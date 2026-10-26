@@ -12,13 +12,16 @@ redis_client = redis.from_url(
 )
 
 
-async def create_session(user_id: int) -> str:
+async def create_session(user_id: int, username: str) -> str:
     session_id = str(uuid4())
     key = f"session:{session_id}"
 
     await redis_client.set(
         key,
-        json.dumps({"user_id": user_id}),
+        json.dumps({
+            "user_id": user_id,
+            "username": username,
+        }),
         ex=SESSION_TTL_SECONDS,
     )
 
